@@ -14,6 +14,9 @@
       &:hover {
         background-color: $green;
       }
+      &.active {
+        background-color: $green;
+      }
     }
   }
 }
