@@ -1,20 +1,16 @@
 import { FC } from 'react'
+import { publicRoutes, SIGN_IN } from './routes'
+import { Routes, Route, Navigate } from 'react-router-dom'
 
 const App: FC = () => {
+  const isAuth = false
   return (
-    <div className="App">
-      <header className="App-header">
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        ></a>
-      </header>
-    </div>
+    <Routes>
+      {publicRoutes.map(({ path, Component }) => (
+        <Route key={path} path={path} element={<Component />} />
+      ))}
+      {!isAuth && <Route path="*" element={<Navigate to={SIGN_IN} />} />}
+    </Routes>
   )
 }
 
