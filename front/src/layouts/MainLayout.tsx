@@ -6,7 +6,9 @@ const MainLayout: FC = () => {
   return (
     <>
       <Header />
-      <Outlet />
+      <main className="main">
+        <Outlet />
+      </main>
     </>
   )
 }
