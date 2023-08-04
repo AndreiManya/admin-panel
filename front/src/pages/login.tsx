@@ -3,19 +3,23 @@ import { LockOutlined, UserOutlined } from '@ant-design/icons'
 import { Button, Form, Input } from 'antd'
 import { Link } from 'react-router-dom'
 import { SIGN_UP } from '../routes'
-import { AuthContext } from '../App'
+import { AuthContext, LoadingContext } from '../App'
 import { login } from '../http/userAPI'
 
 const Login: FC = () => {
   const { setAuth } = useContext(AuthContext)
+  const { setLoading } = useContext(LoadingContext)
   const [name, setName] = useState<string>('')
   const [pass, setPass] = useState<string>('')
   const onSubmit = (): void => {
     const fetch = async (): Promise<void> => {
       try {
+        setLoading(true)
         await login(name, pass).then((e) => e)
         setAuth(true)
+        setLoading(false)
       } catch (e) {
+        setLoading(false)
         console.log(e)
       }
     }
