@@ -19,7 +19,10 @@ class UserController {
         name
       ])
       if (userExist.rowCount > 0) {
-        return res.status(400).json({ message: 'User with this email or username already exist' })
+        const resTypes = ['User with this email or username already exist', 'This user blocked']
+        return res
+          .status(400)
+          .json({ message: userExist.rows[0].status === 'blocked' ? resTypes[1] : resTypes[0] })
       }
       const date = new Date().toLocaleDateString('ru-RU')
       const hashPassowrd = bcrypt.hashSync(password, 7)
@@ -38,6 +41,9 @@ class UserController {
       const userExist = await db.query('SELECT * FROM users WHERE name = $1', [name])
       if (userExist.rowCount === 0) {
         return res.status(400).json({ message: 'User are not exist' })
+      }
+      if (userExist.rows[0].status === 'blocked') {
+        return res.status(400).json({ message: 'This user blocked' })
       }
       const hashPassowrd = bcrypt.compareSync(password, userExist.rows[0].password)
       if (!hashPassowrd) {
@@ -58,17 +64,19 @@ class UserController {
     }
   }
   async deleteUsers(req, res) {
-    const { id } = req.body
-    const user = await db.query('DELETE FROM users WHERE id = $1 ', [id])
-    res.json(user.rows[0])
+    const { users } = req.body
+    users?.forEach((e) => {
+      ;(async () => await db.query('DELETE FROM users WHERE id = $1 ', [e.id]))()
+    })
+    res.status(400).json({ message: 'Users was deleted' })
   }
   async changeStatus(req, res) {
-    const { id, status } = req.body
-    const user = await db.query('UPDATE users SET status = $1 WHERE id = $2 RETURNING *', [
-      status,
-      id
-    ])
-    res.json(user.rows)
+    const { users, status } = req.body
+    users?.forEach((e) => {
+      ;(async () =>
+        await db.query('UPDATE users SET status = $1 WHERE id = $2 RETURNING *', [status, e.id]))()
+    })
+    res.status(400).json({ message: 'Users status was changed' })
   }
 }
 export default new UserController()
