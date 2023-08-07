@@ -1,66 +1,18 @@
-import { FC, useState } from 'react'
+/* eslint-disable @typescript-eslint/no-floating-promises */
+import { FC, useState, useEffect, useContext } from 'react'
 import { Space, Button, Table } from 'antd'
 import { StopOutlined, CheckOutlined, DeleteOutlined } from '@ant-design/icons'
-import type { ColumnsType } from 'antd/es/table'
-
-interface DataType {
-  key: React.Key
-  username: string
-  email: string
-  password: string
-  date: Date
-  lastLogin: Date
-  status: string
-}
-
-const columns: ColumnsType<DataType> = [
-  {
-    title: 'id',
-    dataIndex: 'key'
-  },
-  {
-    title: 'username',
-    dataIndex: 'username'
-  },
-  {
-    title: 'email',
-    dataIndex: 'email',
-    responsive: ['sm']
-  },
-  {
-    title: 'password',
-    dataIndex: 'password'
-  },
-  {
-    title: 'date',
-    dataIndex: 'date',
-    responsive: ['sm']
-  },
-  {
-    title: 'lastLogin',
-    dataIndex: 'lastLogin',
-    responsive: ['sm']
-  },
-  {
-    title: 'status',
-    dataIndex: 'status',
-    responsive: ['sm']
-  }
-]
-const data: DataType[] = []
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    username: `Edward King ${i}`,
-    password: `pass${i}`,
-    email: `email${i}@mgail.com`,
-    date: new Date(),
-    lastLogin: new Date(),
-    status: 'wwdw'
-  })
-}
+import { changeStatus, getUsers, deleteUsers } from '../http/userAPI'
+import { IUsersData } from '../@types/user'
+import columns from '../@types/columns'
+import { AuthContext } from '../App'
+import { Navigate, useNavigate } from 'react-router-dom'
+import { SIGN_IN } from '../routes'
 
 const Users: FC = () => {
+  const { setAuth } = useContext(AuthContext)
+  const navigate = useNavigate()
+  const [data, setData] = useState<IUsersData[] | null>(null)
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
   const onSelectChange = (newSelectedRowKeys: React.Key[]): void => {
     console.log('selectedRowKeys changed: ', newSelectedRowKeys)
@@ -71,17 +23,77 @@ const Users: FC = () => {
     onChange: onSelectChange
   }
   const hasSelected = selectedRowKeys.length > 0
+  const selfAction = (): void => {
+    const id = localStorage.getItem('user')
+    if (id !== null && selectedRowKeys.includes(+id)) {
+      setAuth(false)
+      navigate(SIGN_IN)
+    }
+  }
+  const fetch = async (): Promise<void> => {
+    try {
+      setData(null)
+      const resp = await getUsers().then((e) => e)
+      setData(resp)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+  const status = async (status: string): Promise<void> => {
+    try {
+      await changeStatus(selectedRowKeys, status)
+      status === 'blocked' && selfAction()
+      fetch()
+    } catch (e) {
+      console.log(e)
+    }
+  }
+  const del = async (): Promise<void> => {
+    try {
+      await deleteUsers(selectedRowKeys)
+      selfAction()
+      fetch()
+    } catch (e) {
+      console.log(e)
+    }
+  }
+  useEffect(() => {
+    fetch()
+  }, [])
+
   return (
     <div className="wrapper">
       <div style={{ marginBottom: 16 }}>
         <Space wrap>
-          <Button disabled={!hasSelected} danger icon={<StopOutlined />}>
+          <Button
+            disabled={!hasSelected}
+            onClick={(): void => {
+              status('blocked')
+            }}
+            danger
+            icon={<StopOutlined />}
+          >
             Block
           </Button>
-          <Button type="primary" disabled={!hasSelected} icon={<CheckOutlined />}>
+          <Button
+            type="primary"
+            disabled={!hasSelected}
+            onClick={(): void => {
+              status('active')
+            }}
+            icon={<CheckOutlined />}
+          >
             Unblock
           </Button>
-          <Button type="primary" disabled={!hasSelected} danger icon={<DeleteOutlined />}>
+          <Button
+            type="primary"
+            disabled={!hasSelected}
+            onClick={(): void => {
+              del()
+            }}
+            danger
+            icon={<DeleteOutlined />}
+          >
             Delete
           </Button>
         </Space>
@@ -89,7 +101,15 @@ const Users: FC = () => {
           {hasSelected ? `Selected ${selectedRowKeys.length} users` : ''}
         </span>
       </div>
-      <Table rowSelection={rowSelection} columns={columns} dataSource={data} />
+      {data !== null && (
+        <Table
+          scroll={{ x: 600, y: 'auto' }}
+          rowKey="id"
+          rowSelection={rowSelection}
+          columns={columns}
+          dataSource={data}
+        />
+      )}
     </div>
   )
 }
