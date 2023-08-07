@@ -1,4 +1,4 @@
 export default interface IUser {
-  jwtToken: string
-  username: string
+  token: string
+  name: string
 }
