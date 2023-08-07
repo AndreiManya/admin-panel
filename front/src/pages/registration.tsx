@@ -1,10 +1,12 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { FC, useContext, useState } from 'react'
 import { LockOutlined, UserOutlined, MailOutlined } from '@ant-design/icons'
-import { Button, Form, Input } from 'antd'
+import { Button, Form, Input, message } from 'antd'
 import { SIGN_IN, USERS_LIST } from '../routes'
 import { Link, useNavigate } from 'react-router-dom'
 import { AuthContext, LoadingContext } from '../App'
 import { register } from '../http/userAPI'
+import { isAxiosError } from 'axios'
 
 const Registration: FC = () => {
   const { setLoading } = useContext(LoadingContext)
@@ -18,13 +20,14 @@ const Registration: FC = () => {
         setLoading(true)
         await register(name, pass, email).then((e) => e)
         setLoading(false)
+        message.success('User successfuy registered')
         navigate(USERS_LIST)
       } catch (e) {
         setLoading(false)
-        console.log(e)
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain, @typescript-eslint/no-unsafe-member-access
+        isAxiosError(e) && message.error(e.response?.data?.message)
       }
     }
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     createUser()
   }
   return (

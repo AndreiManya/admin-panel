@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import { FC, useState, useEffect, useContext } from 'react'
-import { Space, Button, Table } from 'antd'
+import { Space, Button, Table, message } from 'antd'
 import { StopOutlined, CheckOutlined, DeleteOutlined } from '@ant-design/icons'
 import { changeStatus, getUsers, deleteUsers } from '../http/userAPI'
 import { IUsersData } from '../@types/user'
@@ -8,6 +8,7 @@ import columns from '../@types/columns'
 import { AuthContext } from '../App'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { SIGN_IN } from '../routes'
+import { isAxiosError } from 'axios'
 
 const Users: FC = () => {
   const { setAuth } = useContext(AuthContext)
@@ -36,16 +37,17 @@ const Users: FC = () => {
       const resp = await getUsers().then((e) => e)
       setData(resp)
     } catch (e) {
-      console.log(e)
+      isAxiosError(e) && message.error(e.message)
     }
   }
   const status = async (status: string): Promise<void> => {
     try {
       await changeStatus(selectedRowKeys, status)
+      message.success('Users blocked')
       status === 'blocked' && selfAction()
       fetch()
     } catch (e) {
-      console.log(e)
+      isAxiosError(e) && message.error(e.message)
     }
   }
   const del = async (): Promise<void> => {
@@ -53,8 +55,9 @@ const Users: FC = () => {
       await deleteUsers(selectedRowKeys)
       selfAction()
       fetch()
+      message.success('Users deleted')
     } catch (e) {
-      console.log(e)
+      isAxiosError(e) && message.error(e.message)
     }
   }
   useEffect(() => {

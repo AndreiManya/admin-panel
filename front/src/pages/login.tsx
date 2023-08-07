@@ -1,10 +1,12 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { FC, useContext, useState } from 'react'
 import { LockOutlined, UserOutlined } from '@ant-design/icons'
-import { Button, Form, Input } from 'antd'
+import { Button, Form, Input, message } from 'antd'
 import { Link, useNavigate } from 'react-router-dom'
 import { SIGN_UP, USERS_LIST } from '../routes'
 import { AuthContext, LoadingContext } from '../App'
 import { login } from '../http/userAPI'
+import { isAxiosError } from 'axios'
 
 const Login: FC = () => {
   const { setAuth } = useContext(AuthContext)
@@ -20,12 +22,13 @@ const Login: FC = () => {
         setAuth(true)
         setLoading(false)
         navigate(USERS_LIST)
+        message.success('You successfuly sign in')
       } catch (e) {
         setLoading(false)
-        console.log(e)
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain, @typescript-eslint/no-unsafe-member-access
+        isAxiosError(e) && message.error(e.response?.data?.message)
       }
     }
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     fetch()
   }
   return (
