@@ -28,7 +28,7 @@ class UserController {
       const hashPassowrd = bcrypt.hashSync(password, 7)
       const newUser = await db.query(
         'INSERT INTO users (name, password, email, date, lastLogin, status) values ($1, $2, $3, $4, $5, $6) RETURNING *',
-        [name, hashPassowrd, email, date, date, 'none']
+        [name, hashPassowrd, email, date, date, 'active']
       )
       res.status(200).json({ message: 'Users was registered' })
     } catch (error) {
@@ -50,7 +50,7 @@ class UserController {
         return res.status(400).json({ message: 'Password is not correct' })
       }
       const token = generateToken(userExist.rows[0].id, name)
-      res.json({ token, name })
+      res.json({ token, id: userExist.rows[0].id })
     } catch (error) {
       res.status(400).json({ message: 'Login error' })
     }
@@ -64,19 +64,28 @@ class UserController {
     }
   }
   async deleteUsers(req, res) {
-    const { users } = req.body
-    users?.forEach((e) => {
-      ;(async () => await db.query('DELETE FROM users WHERE id = $1 ', [e.id]))()
-    })
-    res.status(400).json({ message: 'Users was deleted' })
+    try {
+      const { users } = req.body
+      await db.query(
+        `DELETE FROM users WHERE id IN (${users.map((_, i) => `$${i + 1}`).join(',')})`,
+        users
+      )
+      res.status(200).json({ message: 'Users was deleted' })
+    } catch (error) {
+      res.status(400).json(error)
+    }
   }
   async changeStatus(req, res) {
-    const { users, status } = req.body
-    users?.forEach((e) => {
-      ;(async () =>
-        await db.query('UPDATE users SET status = $1 WHERE id = $2 RETURNING *', [status, e.id]))()
-    })
-    res.status(400).json({ message: 'Users status was changed' })
+    try {
+      const { users, status } = req.body
+      await db.query(
+        `UPDATE users SET status = $1 WHERE id IN (${users.map((_, i) => `$${i + 2}`).join(',')})`,
+        [status, ...users]
+      )
+      res.status(200).json({ message: 'Users status was changed' })
+    } catch (error) {
+      res.status(400).json(error)
+    }
   }
 }
 export default new UserController()
