@@ -28,9 +28,9 @@ class UserController {
       const hashPassowrd = bcrypt.hashSync(password, 7)
       const newUser = await db.query(
         'INSERT INTO users (name, password, email, date, lastLogin, status) values ($1, $2, $3, $4, $5, $6) RETURNING *',
-        [name, hashPassowrd, email, date, date, 'new']
+        [name, hashPassowrd, email, date, date, 'none']
       )
-      res.json(newUser.rows[0])
+      res.status(200).json({ message: 'Users was registered' })
     } catch (error) {
       res.status(400).json({ message: 'Registration error' })
     }
@@ -52,7 +52,7 @@ class UserController {
       const token = generateToken(userExist.rows[0].id, name)
       res.json({ token, name })
     } catch (error) {
-      res.status(400).json({ message: 'Registration error' })
+      res.status(400).json({ message: 'Login error' })
     }
   }
   async getUsers(req, res) {
