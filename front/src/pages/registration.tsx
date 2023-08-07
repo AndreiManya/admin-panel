@@ -16,7 +16,7 @@ const Registration: FC = () => {
     const fetch = async (): Promise<void> => {
       try {
         setLoading(true)
-        await register(name, pass).then((e) => e)
+        await register(name, pass, 'w').then((e) => e)
         setAuth(true)
         setLoading(false)
         navigate(USERS_LIST)
