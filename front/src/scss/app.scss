@@ -1,0 +1,14 @@
+@import './variables';
+@import './libs/normalize';
+@import './components/all';
+
+.main {
+  height: 100%;
+  width: 100%;
+  padding: 200px 0;
+}
+
+.wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
