@@ -26,5 +26,6 @@ export const changeStatus = async (users: Key[], status: string): Promise<string
 
 export const deleteUsers = async (users: Key[]): Promise<Key> => {
   const { data } = await $authHost.delete<Key>('users', { data: { users } })
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return data
 }
