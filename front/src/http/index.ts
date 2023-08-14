@@ -1,11 +1,11 @@
 import axios, { InternalAxiosRequestConfig } from 'axios'
 
 const $host = axios.create({
-  baseURL: 'http://localhost:8080/'
+  baseURL: '/'
 })
 
 const $authHost = axios.create({
-  baseURL: 'http://localhost:8080/'
+  baseURL: '/'
 })
 
 const authInterceptor = (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
